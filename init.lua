@@ -37,7 +37,8 @@ local function hnoise_single(minp, s, seed, range, scale)
 				for x2 = -10, 10 do
 					local h2 = tab[x+x2.." "..z+z2]
 					if h2 then
-						local dist = math.max(math.abs(z2), math.abs(x2))
+						--local dist = math.max(math.abs(z2), math.abs(x2))
+						local dist = math.hypot(z2, x2)
 						dist = dist-h2
 						--h2 = 10-dist
 						h = math.max(h, dist)
