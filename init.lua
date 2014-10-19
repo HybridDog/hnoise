@@ -3,7 +3,7 @@
 local load_time_start = os.clock()
 
 local function get_random(a, b, seed)
-	return PseudoRandom(math.abs(a+b*5)+seed)
+	return PseudoRandom(math.abs(a+b*50)+seed)
 end
 
 local r_chs = {}
@@ -56,6 +56,7 @@ local function hnoise_single(t)
 				and z2 <= s then
 					local dist = math.hypot(z2, x2)
 					dist = dist-h2
+					dist = s*math.acos(dist/s)/(0.5*math.pi)
 					h = math.max(h, dist)
 				end
 			end
