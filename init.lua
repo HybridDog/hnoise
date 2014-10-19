@@ -1,4 +1,7 @@
 --V2
+
+local load_time_start = os.clock()
+
 local function get_random(a, b, seed)
 	return PseudoRandom(math.abs(a+b*5)+seed)
 end
@@ -6,6 +9,8 @@ end
 local r_chs = {}
 
 local function hnoise_single(t)
+	local t1 = os.clock()
+
 	local s = t.scale
 	if not r_chs[s] then
 		r_chs[s] = math.floor(s/3+0.5)
@@ -43,7 +48,18 @@ local function hnoise_single(t)
 	for z = minp.z, maxp.z do
 		for x = minp.x, maxp.x do
 			local h = 0
-			for z2 = -s, s do
+			for p,h2 in pairs(tab) do
+				local x2,z2 = unpack(string.split(p, " "))
+				x2 = math.abs(x2-x)
+				z2 = math.abs(z2-z)
+				if x2 <= s
+				and z2 <= s then
+					local dist = math.hypot(z2, x2)
+					dist = dist-h2
+					h = math.max(h, dist)
+				end
+			end
+			--[[for z2 = -s, s do
 				for x2 = -s, s do
 					local h2 = tab[x+x2.." "..z+z2]
 					if h2 then
@@ -54,17 +70,18 @@ local function hnoise_single(t)
 						h = math.max(h, dist)
 					end
 				end
-			end
+			end]]
 			h = h/s_max-0.5
 			--tab2[n] = {x=x, y=maxp.y-h, z=z}
 			tab2[n] = {x=x, y=h, z=z}
 			n = n+1
 		end
 	end
+	print(string.format("[hnoise] calculated after ca. %.2fs", os.clock() - t1))
 	return tab2
 end
 
-local function hnoise(t)
+function hnoise(t)
 	local n1 = hnoise_single(t)
 	t.seed = t.seed+1
 	local n2 = hnoise_single(t)
@@ -123,3 +140,34 @@ minetest.register_node(":ac:hmg", {
 		end
 	end,
 })
+
+minetest.register_on_mapgen_init(function(mgparams)
+	minetest.set_mapgen_params({mgname="singlenode"})
+end)
+
+local c_stone = minetest.get_content_id("default:stone")
+
+minetest.register_on_generated(function(minp, maxp, seed)
+	if maxp.y < 1
+	or minp.y > 1 then
+		return
+	end
+	local ps = hnoise({minp=minp, scale=10, seed=8, size=79})
+
+	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
+	local data = vm:get_data()
+	local area = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
+
+	for _,p in pairs(ps) do
+		for y = minp.y, minp.y+(p.y+1)*20 do
+			p.y = y
+			data[area:indexp(p)] = c_stone
+		end
+	end
+
+	vm:set_data(data)
+	vm:write_to_map()
+end)
+
+
+print(string.format("[hnoise] loaded after ca. %.2fs", os.clock() - load_time_start))
