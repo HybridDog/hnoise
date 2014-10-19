@@ -108,7 +108,7 @@ end
 
 local function py2mg(x1, x2, z1, z2)
 	return dif(x1, x2) + dif(z1, z2)
-end]]
+end]
 
 minetest.register_node(":ac:hmg", {
 	description = "hmg",
@@ -137,10 +137,11 @@ minetest.register_node(":ac:hmg", {
 				if minetest.get_node(p).name ~= "default:desert_stone" then
 					minetest.set_node(p, {name="default:desert_stone"})
 				end
-			end]]
+			end]
 		end
 	end,
 })
+
 
 minetest.register_on_mapgen_init(function(mgparams)
 	minetest.set_mapgen_params({mgname="singlenode"})
@@ -168,7 +169,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 
 	vm:set_data(data)
 	vm:write_to_map()
-end)
+end)]]
 
 
 print(string.format("[hnoise] loaded after ca. %.2fs", os.clock() - load_time_start))
