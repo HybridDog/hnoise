@@ -72,7 +72,7 @@ local function hnoise_single(t)
 					end
 				end
 			end]]
-			h = h/s_max-0.5
+			h = h/s_max-- -0.5
 			--tab2[n] = {x=x, y=maxp.y-h, z=z}
 			tab2[n] = {x=x, y=h, z=z}
 			n = n+1
@@ -88,12 +88,12 @@ function hnoise(t)
 	local n2 = hnoise_single(t)
 	t.seed = t.seed-1
 	for i = 1,#n1 do
-		n1[i].y = n1[i].y+n2[i].y
+		n1[i].y = (n1[i].y-n2[i].y)*2
 	end
 	return n1
 end
 
---[[
+-- [[
 local function dif(z1, z2)
 	return math.abs(z1-z2)
 end
@@ -108,13 +108,13 @@ end
 
 local function py2mg(x1, x2, z1, z2)
 	return dif(x1, x2) + dif(z1, z2)
-end]
+end--]]
 
 minetest.register_node(":ac:hmg", {
 	description = "hmg",
 	tiles = {"ac_block.png"},
 	groups = {snappy=1,bendy=2,cracky=1},
-	sounds = default_stone_sounds,
+	sounds = default.node_sound_stone_defaults(),
 	on_construct = function(pos)
 		local minp = vector.chunkcorner(pos)
 		for _,p in pairs(hnoise({minp=minp, scale=10, seed=8})) do
@@ -137,7 +137,7 @@ minetest.register_node(":ac:hmg", {
 				if minetest.get_node(p).name ~= "default:desert_stone" then
 					minetest.set_node(p, {name="default:desert_stone"})
 				end
-			end]
+			end]]
 		end
 	end,
 })
@@ -147,29 +147,71 @@ minetest.register_on_mapgen_init(function(mgparams)
 	minetest.set_mapgen_params({mgname="singlenode"})
 end)
 
+local heights = {}
+local function get_mapgen_heights(minp)
+	local pstr = minp.x .. minp.z
+	local done = heights[pstr]
+	if done then
+		return done
+	end
+
+	minp = {x=minp.x,y=0,z=minp.z}
+	local tab = {}
+	local noise_giant = hnoise({minp=minp, scale=3000, seed=55, size=79})
+	local noise_big = hnoise({minp=minp, scale=2000, seed=36, size=79})
+	local ps = hnoise({minp=minp, scale=100, seed=8, size=79})
+	local noise_fine = hnoise({minp=minp, scale=10, seed=324, size=79})
+
+	for n,p in pairs(ps) do
+		local ytop = p.y*30
+		ytop = ytop+noise_giant[n].y*1000
+		ytop = ytop+noise_big[n].y*1000
+		ytop = ytop+noise_fine[n].y*8
+		ytop = math.floor(ytop+0.5)
+		tab[n] = {p.x, ytop, p.z}
+	end
+
+	heights[pstr] = tab
+	return tab
+end
+
 local c_stone = minetest.get_content_id("default:stone")
+local c_grass = minetest.get_content_id("default:dirt_with_grass")
 
 minetest.register_on_generated(function(minp, maxp, seed)
-	if maxp.y < 1
-	or minp.y > 1 then
-		return
-	end
-	local ps = hnoise({minp=minp, scale=10, seed=8, size=79})
+	local ps = get_mapgen_heights(minp)
 
 	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
 	local data = vm:get_data()
 	local area = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
 
 	for _,p in pairs(ps) do
-		for y = minp.y, minp.y+(p.y+1)*20 do
-			p.y = y
-			data[area:indexp(p)] = c_stone
+		local x,ytop,z = unpack(p)
+		if minp.y <= ytop then
+			local rand = math.max(0, ytop-1500)
+			local grass = rand == 0
+			if not grass then
+				local rand = rand/200
+				grass = rand < 1
+				if grass then
+					grass = math.random() < rand
+				end
+			end
+			for y = minp.y, maxp.y do
+				if y == ytop then
+					if grass then
+						data[area:index(x,y,z)] = c_grass
+					end
+					break
+				end
+				data[area:index(x,y,z)] = c_stone
+			end
 		end
 	end
 
 	vm:set_data(data)
 	vm:write_to_map()
-end)]]
+end)
 
 
 print(string.format("[hnoise] loaded after ca. %.2fs", os.clock() - load_time_start))
