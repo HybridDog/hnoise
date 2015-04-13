@@ -144,7 +144,7 @@ minetest.register_node(":ac:hmg", {
 
 
 minetest.register_on_mapgen_init(function(mgparams)
-	minetest.set_mapgen_params({mgname="singlenode"})
+	minetest.set_mapgen_params({mgname="singlenode", flags="nolight"})
 end)
 
 local heights = {}
@@ -210,6 +210,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	end
 
 	vm:set_data(data)
+	vm:calc_lighting()
 	vm:write_to_map()
 end)
 
