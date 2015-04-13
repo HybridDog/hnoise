@@ -93,7 +93,7 @@ function hnoise(t)
 	return n1
 end
 
--- [[
+--[[
 local function dif(z1, z2)
 	return math.abs(z1-z2)
 end
@@ -108,7 +108,7 @@ end
 
 local function py2mg(x1, x2, z1, z2)
 	return dif(x1, x2) + dif(z1, z2)
-end--]]
+end--] ]
 
 minetest.register_node(":ac:hmg", {
 	description = "hmg",
@@ -137,10 +137,10 @@ minetest.register_node(":ac:hmg", {
 				if minetest.get_node(p).name ~= "default:desert_stone" then
 					minetest.set_node(p, {name="default:desert_stone"})
 				end
-			end]]
+			end] ]
 		end
 	end,
-})
+})-- ]]
 
 
 minetest.register_on_mapgen_init(function(mgparams)
