@@ -143,6 +143,9 @@ minetest.register_node(":ac:hmg", {
 })-- ]]
 
 
+local dogen = false
+if dogen then
+
 minetest.register_on_mapgen_init(function(mgparams)
 	minetest.set_mapgen_params({mgname="singlenode", flags="nolight"})
 end)
@@ -213,6 +216,8 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	vm:calc_lighting()
 	vm:write_to_map()
 end)
+
+end
 
 
 print(string.format("[hnoise] loaded after ca. %.2fs", os.clock() - load_time_start))
