@@ -123,7 +123,7 @@ minetest.register_node(":ac:hmg", {
 				p.y = y -- might not work with luajit
 				minetest.set_node(p, {name="default:desert_stone"})
 			end
-			--[[local p2 = {x=p.x, y=p.y+1, z=p.z}
+			-- [ [local p2 = {x=p.x, y=p.y+1, z=p.z}
 			if p.y <= minp.y+7 then
 				local p2 = {x=p.x, y=minp.y+6, z=p.z}
 				local p3 = {x=p.x, y=p2.y+1, z=p.z}
@@ -140,7 +140,7 @@ minetest.register_node(":ac:hmg", {
 			end] ]
 		end
 	end,
-})-- ]]
+})--]]
 
 
 local dogen = false
@@ -220,4 +220,4 @@ end)
 end
 
 
-print(string.format("[hnoise] loaded after ca. %.2fs", os.clock() - load_time_start))
+minetest.log("info", (string.format("[hnoise] loaded after ca. %.2fs", os.clock() - load_time_start)))
